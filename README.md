@@ -27,7 +27,12 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 - Implementation of blockchain technology for secure transactions and data management
 
 ## 📷 Screenshots
-[Upload screenshots here]
+- Landing Page
+![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/4ca60527-f95a-4621-9c4b-22aafef53b64)
+
+- Pitch your idea Page
+![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/eafb1e60-fcdf-4d7d-8f36-29c3daeeb365)
+
 
 ## 🌏 Conclusion
 Utkranti aims to bridge the gap between rural entrepreneurs and funding opportunities, fostering economic growth and sustainability. By leveraging AI and deep learning technologies, the platform provides a comprehensive solution for empowering aspiring entrepreneurs and promoting sustainable business practices.
