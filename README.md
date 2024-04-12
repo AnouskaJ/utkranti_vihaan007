@@ -35,11 +35,11 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 
 - Machine Learning Models:
   -   To translate Indian Language Pitch to English
-  -   ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/dfd8cdd7-8999-4db9-bd1b-e4d2a0b94737)
+      ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/dfd8cdd7-8999-4db9-bd1b-e4d2a0b94737)
  
   -   To frame the translated pitch
-  -   ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/333f9986-fe59-4c26-9780-ada9393dba20)
-  -   ![Screenshot 2024-04-09 130343](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/37b105e6-e3d2-4cb1-a9c6-710dd67e09c1)
+      ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/333f9986-fe59-4c26-9780-ada9393dba20)
+      ![Screenshot 2024-04-09 130343](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/37b105e6-e3d2-4cb1-a9c6-710dd67e09c1)
 
 
 
