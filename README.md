@@ -31,7 +31,8 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/4ca60527-f95a-4621-9c4b-22aafef53b64)
 
 - Pitch your idea Page
-![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/eafb1e60-fcdf-4d7d-8f36-29c3daeeb365)
+![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/31dbf422-d502-4dc5-9d68-8ce2d1303dc0)
+
 
 
 ## 🌏 Conclusion
