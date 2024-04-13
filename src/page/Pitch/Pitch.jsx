@@ -21,6 +21,24 @@ export default function Ocr() {
   const [languages, setLanguages] = useState({});
   const [speechToTextResult, setSpeechToTextResult] = useState(null);
   const [language, setLanguage] = useState("english");
+  const [framedPitch, setFramedPitch] = useState("");
+  const [translatedFramedPitch, setTranslatedFramedPitch] = useState("");
+  const [summary, setSummary] = useState("");
+  const [file, setFile] = useState(null);
+  const [analysis, setAnalysis] = useState(null);
+
+  function handleSustainabilityScoreClick(framedPitch) {
+    return async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/carbon_footprint', { framed_pitch: framedPitch });
+            const { sustainability, score } = response.data;
+            alert(`Answer: ${score} \n\n Explanation:${sustainability}`);
+        } catch (error) {
+            console.error('Error getting sustainability score:', error);
+            alert('Error getting sustainability score. Please try again.');
+        }
+    };
+}
 
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -55,6 +73,38 @@ export default function Ocr() {
     setShowFamilyPhoto(!showFamilyPhoto); // Toggle the family photo display
   };
 
+// Bank statement
+const handleFileChange = (e) => {
+  setFile(e.target.files[0]);
+};
+
+const handleSubmit = async () => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axios.post('http://localhost:5000/analyze', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (response.data.success) {
+      setAnalysis(response.data.data);
+    } else {
+      console.error(response.data.error);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleClose = () => {
+  setAnalysis(null);
+};
+
+// close
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
@@ -80,7 +130,7 @@ export default function Ocr() {
 
   const uploadImage = async (imageData) => {
     try {
-      const response = await axios.post("http://localhost:5000/upload", {
+      const response = await axios.post("http://localhost:5000/analyze", {
         imageData: imageData,
       });
 
@@ -90,6 +140,7 @@ export default function Ocr() {
     }
   };
 
+
   const toggleChat = () => {
     setChatVisible(!chatVisible);
   };
@@ -98,27 +149,46 @@ export default function Ocr() {
     event.preventDefault();
     if (newMessage.trim() !== "") {
       try {
-        let response;
+        let translationResponse;
+        let frameResponse;
+  
+        // Call translate_pitch endpoint
         if (selectedLanguage === "eng_Latn") {
-          response = await axios.post("http://localhost:5000/query", {
-            ocr: ocrResult,
+          translationResponse = await axios.post("http://localhost:5000/translate_pitch", {
             prompt: newMessage,
+            src_lang: selectedLanguage,
           });
         } else {
-          response = await axios.post(
-            "http://localhost:5000/translated_query",
+          translationResponse = await axios.post(
+            "http://localhost:5000/translate_pitch",
             {
-              ocr: ocrResult,
               prompt: newMessage,
               src_lang: selectedLanguage,
             }
           );
         }
-
-        const answer = response.data.answer;
-        setMessages([...messages, { text: newMessage, isUser: true }]);
-        setMessages([...messages, { text: answer, isUser: false }]);
-        setNewMessage("");
+  
+        // Extract translated sentence
+        const translatedSentence = translationResponse.data.answer;
+  
+        // Call frame_pitch endpoint
+        frameResponse = await axios.post("http://localhost:5000/frame_pitch", {
+          translations: translatedSentence,
+        });
+  
+        // Extract framed pitch and summary
+        setFramedPitch(frameResponse.data.framed_pitch);
+        setSummary(frameResponse.data.summary);
+  
+      // Update state with the messages
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: newMessage, isUser: true },
+        { text: translatedSentence, isUser: false },
+        { text: framedPitch, isUser: false },
+        { text: summary, isUser: false },
+      ]);
+      setNewMessage("");
         // Store the text-to-speech data
         const utterance = new SpeechSynthesisUtterance(answer);
 
@@ -191,6 +261,19 @@ export default function Ocr() {
       }
     }
   };
+
+    const translateFramedPitch = async () => {
+    try {
+      const response = await axios.post("http://localhost:5000/translate_framed_pitch", {
+        framed_pitch: framedPitch,
+        src_lang: language,
+      });
+      setTranslatedFramedPitch(response.data.answer);
+    } catch (error) {
+      console.error("Error translating framed pitch:", error);
+    }
+  };
+
 
   const handleSpeechToText = async () => {
     try {
@@ -270,6 +353,30 @@ export default function Ocr() {
               : "उत्क्रांति में आपका स्वागत है,"}
           </span>
         </div>
+
+        <div>
+      <input type="file" onChange={handleFileChange} />
+      <button onClick={handleSubmit}>Upload</button>
+      {analysis && (
+        <div className="popup">
+          <div className="popup-content">
+            <span className="close" onClick={handleClose}>&times;</span>
+            <h2>Financial Analysis</h2>
+            <p>Statement Period: {analysis.statement_period}</p>
+            <p>Number of Days: {analysis.number_of_days}</p>
+            <p>Total Withdrawal: {analysis.total_withdrawal}</p>
+            <p>Total Deposit: {analysis.total_deposit}</p>
+            <p>Closing Balance: {analysis.closing_balance}</p>
+            <p>Opening Balance: {analysis.opening_balance}</p>
+            <p>Total Transactions: {analysis.total_transactions}</p>
+            <p>Average Withdrawal per Day: {analysis.average_withdrawal_per_day}</p>
+            <p>Average Withdrawal per Month: {analysis.average_withdrawal_per_month}</p>
+          </div>
+        </div>
+      )}
+    </div>
+
+
         <div className="flex flex-col">
           <div className="flex flex-col">
             <span className="text-sm m-10 text-white">
@@ -315,12 +422,16 @@ export default function Ocr() {
             />
           )} */}
           </div>
+
+
           <div className="flex flex-col mt-5">
             <span className="text-sm m-10 text-white">
               {language === "english"
                 ? "Step 2 of 2: Pitch your product"
                 : "चरण 2 में से 2: बिजनेस पिच"}
             </span>
+
+
             <progress
               className="progress w-[50%] -mt-5 ml-10 bg-white progress-success"
               value={progress}
@@ -342,14 +453,15 @@ export default function Ocr() {
                     ? "Text will appear here..."
                     : "पिच यहाँ दिखाई जाएगा..."
                 }
-                value={ocrResult}
+                value={framedPitch}
               ></textarea>
               <button
                 className="bg-[#5BBA9F] p-3 h-fit rounded-lg self-end hover:bg-[#4bc9a5] text-white"
-                onClick={() => handleSave()}
+                onClick={handleSustainabilityScoreClick(framedPitch)}
               >
-                {language === "english" ? "Save" : "बचाना"}
+                {language === "english" ? "Sustainability Score" : "बचाना"}
               </button>
+
             </div>
           </div>
         </div>
