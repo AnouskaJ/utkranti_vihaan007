@@ -28,22 +28,22 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 
 ## 📷 Screenshots
 - Landing Page
-![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/4ca60527-f95a-4621-9c4b-22aafef53b64)
+![Screenshot 2024-04-13 082043](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/6020196a-d228-44c6-aa69-9135e146e232)
 
 - Pitch your idea Page
-- ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/31dbf422-d502-4dc5-9d68-8ce2d1303dc0)
+![Screenshot 2024-04-13 082833](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/d7aca453-e547-474a-9c3a-efc40e5013be)
 
-- Machine Learning Models:
-  -   To translate Indian Language Pitch to English
-      ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/dfd8cdd7-8999-4db9-bd1b-e4d2a0b94737)
- 
-  -   To frame the translated pitch
-      ![image](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/333f9986-fe59-4c26-9780-ada9393dba20)
-      ![Screenshot 2024-04-09 130343](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/37b105e6-e3d2-4cb1-a9c6-710dd67e09c1)
+- Financial Analysis
+![Screenshot 2024-04-13 082448](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/ff3c1266-a3ee-44eb-a178-4f399f19d2cb)
 
+- Sustainability Score
+![Screenshot 2024-04-13 082510](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/f31ca83d-4b90-4697-849b-cb9405ca3c8c)
 
+- Invest in an idea Page
+![Screenshot 2024-04-13 082603](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/c1b21fce-fe22-4171-bb5b-83dae81548ca)
 
-
+- Product Page
+![Screenshot 2024-04-13 082714](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/f8e48c68-bdca-49ed-b448-8ab6b65a32a5)
 
 
 ## 🌏 Conclusion
