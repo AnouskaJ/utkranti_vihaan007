@@ -21,6 +21,7 @@ import base64
 
 os.environ["HUGGINGFACE_ACCESS_TOKEN"] = "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"
 embedchain_app = App.from_config("mistral.yaml")
+embedchain_app2 = App.from_config("mistral.yaml")
 
 
 #Flask
@@ -85,14 +86,9 @@ def translate_pitch():
         print(sentence)
         sentences = []
         sentences.append(sentence)
-        sentence = data.get('prompt', '')
-        print(sentence)
-        sentences = []
-        sentences.append(sentence)
         src_lang = data.get('src_lang', '')
         tgt_lang = 'eng_Latn'
         print(sentences)
-        print(sentences)
 
         if src_lang == 'eng_Latn':
             model = en_indic_model
@@ -109,7 +105,6 @@ def translate_pitch():
 
         outputs = tokenizer.batch_decode(outputs, src=False)
         outputs = ip.postprocess_batch(outputs, lang=tgt_lang)
-        print("Output:", outputs)
         print("Output:", outputs)
         print(outputs[0])
         return jsonify({'answer': outputs[0]})
@@ -146,42 +141,7 @@ def translate_framed_pitch():
         print("Output:", outputs)
         print(outputs[0])
         return jsonify({'answer': outputs[0]})
-        return jsonify({'answer': outputs[0]})
     except Exception as e:
-        return jsonify({"error": str(e)})
-    
-@flask_app.route('/translate_framed_pitch', methods=['POST'])
-def translate_framed_pitch():
-    try:
-        data = request.get_json()
-        sentence = data.get('prompt', '')
-        print(sentence)
-        sentences = []
-        sentences.append(sentence)
-        tgt_lang = data.get('src_lang', '')
-        src_lang = 'eng_Latn'
-        print(sentences)
-
-        if src_lang == 'eng_Latn':
-            model = en_indic_model
-            tokenizer = en_indic_tokenizer
-        else:
-            model = indic_en_model
-            tokenizer = indic_en_tokenizer
-
-        batch = ip.preprocess_batch(sentences, src_lang=src_lang, tgt_lang=tgt_lang)
-        batch = tokenizer(batch, src=True, return_tensors="pt")
-
-        with torch.inference_mode():
-            outputs = model.generate(**batch, num_beams=5, num_return_sequences=1, max_length=256)
-
-        outputs = tokenizer.batch_decode(outputs, src=False)
-        outputs = ip.postprocess_batch(outputs, lang=tgt_lang)
-        print("Output:", outputs)
-        print(outputs[0])
-        return jsonify({'answer': outputs[0]})
-    except Exception as e:
-        return jsonify({"error": str(e)})
         return jsonify({"error": str(e)})
     
 # English pitch to framed content
@@ -234,20 +194,65 @@ def get_details():
 
 
 # add the english pitch to embedchain and receive queries
-@flask_app.route('/add_pitch_to_embedchain', methods=['POST'])
-def add_pitch_to_embedchain():
+@flask_app.route('/query', methods=['POST'])
+def query():
     try:
         data = request.get_json()
-        framed_pitch = data['framed_pitch']
-        queries = data['queries']
-        embedchain_app.add(framed_pitch, data_type='text')
-        result = embedchain_app.query(queries)
+        pitch = data['pitch']
+        input_text =  data.get('prompt', '')
+        embedchain_app2.add(pitch, data_type='text')
+        result = embedchain_app2.query("Give a brief answer for: ", input_text)
         answer_index = result.find("Answer")
         if answer_index != -1:
             embedchain_result = result[answer_index + len("Answer: "):]
         else:
             embedchain_result = result
         return jsonify({"answer": embedchain_result})
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+@flask_app.route('/translated_query', methods=['POST'])
+def translated_query():
+    try:
+        data = request.get_json()
+        pitch = "Pitch queries to be answered: " + data.get('pitch', '')
+        embedchain_app2.add(pitch, data_type='text')
+        input_text =  data.get('prompt', '')
+        src_lang = data.get('src_lang', 'eng_Latn') 
+        tgt_lang = 'eng_Latn'
+
+        # Translate input text to English
+        batch = ip.preprocess_batch([input_text], src_lang=src_lang, tgt_lang=tgt_lang)
+        batch = indic_en_tokenizer(batch, src=True, return_tensors="pt")
+
+        with torch.inference_mode():
+            translated_input = indic_en_model.generate(**batch, num_beams=5, num_return_sequences=1, max_length=256)
+
+        translated_input = indic_en_tokenizer.batch_decode(translated_input, src=False)[0]
+
+        # Query Mistral with translated input
+        text = "Just give me a brief answer for: "
+        prompt = text + translated_input
+        result = embedchain_app2.query(prompt)
+        answer_index = result.find("Answer")
+        if answer_index != -1:
+            embedchain_result = result[answer_index + len("Answer: "):]
+        else:
+            embedchain_result = result
+
+        # Translate Mistral result to the original source language
+        batch = ip.preprocess_batch([embedchain_result], src_lang=tgt_lang, tgt_lang=src_lang)
+        batch = en_indic_tokenizer(batch, src=True, return_tensors="pt")
+
+        with torch.inference_mode():
+            translated_result = en_indic_model.generate(**batch, num_beams=5, num_return_sequences=1, max_length=256)
+
+        translated_result = en_indic_tokenizer.batch_decode(translated_result, src=False)[0]
+
+        # Postprocess the translated result
+        translated_result = ip.postprocess_batch([translated_result], lang=src_lang)
+        print(translated_result)
+        return jsonify({'answer': translated_result})
     except Exception as e:
         return jsonify({"error": str(e)})
 

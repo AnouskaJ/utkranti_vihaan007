@@ -26,19 +26,29 @@ export default function Ocr() {
   const [summary, setSummary] = useState("");
   const [file, setFile] = useState(null);
   const [analysis, setAnalysis] = useState(null);
+  const [score, setScore] = useState(null);
+  const [sustainability, setSustainability] = useState(null);
+  const [sendClicked, setSendClicked] = useState(false);
+  const [calculatingScore, setCalculatingScore] = useState(false);
 
-  function handleSustainabilityScoreClick(framedPitch) {
-    return async () => {
-        try {
-            const response = await axios.post('http://localhost:5000/carbon_footprint', { framed_pitch: framedPitch });
-            const { sustainability, score } = response.data;
-            alert(`Answer: ${score} \n\n Explanation:${sustainability}`);
-        } catch (error) {
-            console.error('Error getting sustainability score:', error);
-            alert('Error getting sustainability score. Please try again.');
-        }
-    };
-}
+
+
+  const handleSustainabilityScoreClick = (framedPitch) => async () => {
+    try {
+      setCalculatingScore(true); // Set the state to indicate calculation in progress
+  
+      const response = await axios.post('http://localhost:5000/carbon_footprint', { framed_pitch: framedPitch });
+      const { sustainability, score } = response.data;
+      setSustainability(sustainability);
+      setScore(score);
+      document.getElementById('sustainability_score_modal').showModal();
+    } catch (error) {
+      console.error('Error getting sustainability score:', error);
+      alert('Error getting sustainability score. Please try again.');
+    } finally {
+      setCalculatingScore(false); // Reset the state after the calculation is done
+    }
+  };
 
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -74,8 +84,9 @@ export default function Ocr() {
   };
 
 // Bank statement
-const handleFileChange = (e) => {
+const handleFileChange = async (e) => {
   setFile(e.target.files[0]);
+  handleSubmit(); // Call handleSubmit immediately after setting the file
 };
 
 const handleSubmit = async () => {
@@ -147,6 +158,7 @@ const handleClose = () => {
 
   const handleChatSubmit = async (event) => {
     event.preventDefault();
+    setSendClicked(true);
     if (newMessage.trim() !== "") {
       try {
         let translationResponse;
@@ -336,8 +348,20 @@ const handleClose = () => {
     setLanguage(language === "english" ? "hindi" : "english");
   };
 
+  useEffect(() => {
+    if (file) {
+      handleSubmit();
+    }
+  }, [file]);
+
+  useEffect(() => {
+    if (analysis) {
+      document.getElementById('analysis_modal').showModal();
+    }
+  }, [analysis]);
+
   return (
-    <div className="flex bg-[#78abe8] justify-between items-center">
+    <div className="flex bg-[#78abe8] justify-between items-center min-h-screen max-h-fit">
       <div className="bg-[#0e3a6e] w-[60%] h-fit px-2 py-10">
         <button
           onClick={goBack}
@@ -354,26 +378,31 @@ const handleClose = () => {
           </span>
         </div>
 
-        <div>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleSubmit}>Upload</button>
+    <div>
+      <input type="file" id="bank" style={{ display: "none" }} onChange={handleFileChange} />
+      {/* <button onClick={handleSubmit}>Upload</button> */}
       {analysis && (
-        <div className="popup">
-          <div className="popup-content">
-            <span className="close" onClick={handleClose}>&times;</span>
-            <h2>Financial Analysis</h2>
-            <p>Statement Period: {analysis.statement_period}</p>
-            <p>Number of Days: {analysis.number_of_days}</p>
-            <p>Total Withdrawal: {analysis.total_withdrawal}</p>
-            <p>Total Deposit: {analysis.total_deposit}</p>
-            <p>Closing Balance: {analysis.closing_balance}</p>
-            <p>Opening Balance: {analysis.opening_balance}</p>
-            <p>Total Transactions: {analysis.total_transactions}</p>
-            <p>Average Withdrawal per Day: {analysis.average_withdrawal_per_day}</p>
-            <p>Average Withdrawal per Month: {analysis.average_withdrawal_per_month}</p>
-          </div>
-        </div>
-      )}
+        <>
+  <dialog id="analysis_modal" className="modal">
+    <div className="modal-box">
+      <span className="close" onClick={handleClose}>&times;</span>
+      <h2>Financial Analysis</h2>
+      <p>Statement Period: {analysis.statement_period}</p>
+      <p>Number of Days: {analysis.number_of_days}</p>
+      <p>Total Withdrawal: {analysis.total_withdrawal}</p>
+      <p>Total Deposit: {analysis.total_deposit}</p>
+      <p>Closing Balance: {analysis.closing_balance}</p>
+      <p>Opening Balance: {analysis.opening_balance}</p>
+      <p>Total Transactions: {analysis.total_transactions}</p>
+      <p>Average Withdrawal per Day: {analysis.average_withdrawal_per_day}</p>
+      <p>Average Withdrawal per Month: {analysis.average_withdrawal_per_month}</p>
+    </div>
+  </dialog>
+        </>
+)}
+
+{/* Open the modal using document.getElementById('ID').showModal() method */}
+
     </div>
 
 
@@ -389,15 +418,9 @@ const handleClose = () => {
               value={progress}
               max="100"
             ></progress>
-            <input
-              type="file"
-              id="fileUpload"
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
             <button
               className="my-5 p-3 flex gap-2 items-center ml-8 bg-[#5BBA9F] w-fit rounded-lg text-white hover:bg-[#4bc9a5]"
-              onClick={() => document.getElementById("fileUpload").click()}
+              onClick={() => document.getElementById("bank").click()}
             >
               <MdOutlineUploadFile />{" "}
               {language === "english"
@@ -447,7 +470,7 @@ const handleClose = () => {
             </span>
             <div className="flex gap-6">
               <textarea
-                className="border border-black rounded-lg p-3 mb-4 w-full h-32"
+                className="border border-black rounded-lg p-3 mb-4 w-full h-64"
                 placeholder={
                   language === "english"
                     ? "Text will appear here..."
@@ -456,11 +479,21 @@ const handleClose = () => {
                 value={framedPitch}
               ></textarea>
               <button
-                className="bg-[#5BBA9F] p-3 h-fit rounded-lg self-end hover:bg-[#4bc9a5] text-white"
-                onClick={handleSustainabilityScoreClick(framedPitch)}
-              >
-                {language === "english" ? "Sustainability Score" : "बचाना"}
-              </button>
+  className="bg-[#5BBA9F] p-3 h-fit rounded-lg self-end hover:bg-[#4bc9a5] text-white"
+  onClick={handleSustainabilityScoreClick(framedPitch)}
+  disabled={calculatingScore} // Disable the button while calculation is in progress
+>
+  {calculatingScore ? 'Calculating...' : 'Sustainability Score'}
+</button>
+
+              <dialog id="sustainability_score_modal" className="modal">
+  <div className="modal-box">
+    <span className="close" onClick={() => document.getElementById('sustainability_score_modal').close()}>&times;</span>
+    <h2>Sustainability Score</h2>
+    <p>Score: {score}</p>
+    <p>Explanation: {sustainability}</p>
+  </div>
+</dialog>
 
             </div>
           </div>
@@ -469,32 +502,38 @@ const handleClose = () => {
       <div>
 
 
-            <div className="bg-white p-3 mx-10 mb-5 rounded-lg my-10">
+            <div className="bg-white p-3 mx-10 mb-5 rounded-lg my-10 w-[32rem]">
               <span className="font-semibold">
                 {language === "english" ? "Your Input:" : "आपका इनपुट:"}
               </span>
               <span className="ml-2">{newMessage}</span>
             </div>
             <div className="bg-white chat mr-10 w-[30rem] mx-auto h-[400px] p-3 break-words overflow-auto">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`chat ${
-                    message.isUser ? "chat-end" : "chat-start"
-                  }`}
-                >
-                  <div className="chat-bubble">
-                    {message.text}
-                    {!message.isUser && (
-                      <GiSpeaker
-                        size={30}
-                        onClick={() => handlePlayButtonClick(message.text)}
-                      />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Conditional rendering for the loading sign */}
+      {sendClicked && messages.length === 0 && (
+  <div className="flex justify-center items-center h-32">
+    <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-16 w-16"></div>
+  </div>
+)}
+
+      {/* Rendering chat messages */}
+      {messages.map((message, index) => (
+        <div
+          key={index}
+          className={`chat ${message.isUser ? "chat-end" : "chat-start"}`}
+        >
+          <div className="chat-bubble">
+            {message.text}
+            {!message.isUser && (
+              <GiSpeaker
+                size={30}
+                onClick={() => handlePlayButtonClick(message.text)}
+              />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
             <div className="flex justify-between bg-white p-2 relative top-12 w-[90%] gap-2">
               <img src="/scan/sparkle.svg" alt="" />
               <button
@@ -543,32 +582,6 @@ const handleClose = () => {
         {language === "english" ? "हिंदी" : "English"}
       </button>
       <div>
-      {ocrResult !== "" && (
-        <div className="absolute top-[3%] right-[20%]">
-          <button
-            className="flex items-center justify-center bg-[#5BBA9F] text-white px-4 py-2 rounded-lg hover:bg-[#4bc9a5]"
-            onClick={() => setShowDropdown(!showDropdown)}
-          >
-            <FaShoppingCart className="mr-2" /> {/* Shopping cart icon */}
-            {language === "english" ? "Add Medicines" : "दवाएं जोड़ें"}
-          </button>
-          {showDropdown && (
-            <div className="flex gap-3">
-              <select className="ml-2 py-2 px-4 bg-white border border-gray-300 rounded">
-                <option value="paracetamol">Paracetamol</option>
-                <option value="ibuprofen">Ibuprofen</option>
-              </select>
-              <button
-                className="flex gap-2 items-center"
-                onClick={handleAdd}
-              >
-                Add <FaPlus />
-              {added && <span>Added</span>}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
     </div>
   );

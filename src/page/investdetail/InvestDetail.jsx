@@ -38,6 +38,8 @@ const InvestDetail = () => {
   const [language, setLanguage] = useState("english");
   const [showDropdown, setShowDropdown] = useState(false);
   const [added, setAdded] = useState(false);
+  const [speechSynthesisUtterance, setSpeechSynthesisUtterance] = useState(null);
+  
 
   // Fetch languages from API
   useEffect(() => {
@@ -108,14 +110,14 @@ const InvestDetail = () => {
         let response;
         if (selectedLanguage === "eng_Latn") {
           response = await axios.post("http://localhost:5000/query", {
-            ocr: ocrResult,
+            pitch: data.Summary,
             prompt: newMessage,
           });
         } else {
           response = await axios.post(
             "http://localhost:5000/translated_query",
             {
-              ocr: ocrResult,
+              pitch: data.Summary,
               prompt: newMessage,
               src_lang: selectedLanguage,
             }
@@ -199,6 +201,19 @@ const InvestDetail = () => {
     }
   };
 
+  function handleSustainabilityScoreClick(framedPitch) {
+    return async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/carbon_footprint', { framed_pitch: framedPitch });
+            const { sustainability, score } = response.data;
+            alert(`${score} \n\n Explanation:${sustainability}`);
+        } catch (error) {
+            console.error('Error getting sustainability score:', error);
+            alert('Error getting sustainability score. Please try again.');
+        }
+    };
+}
+
   return (
     <div className="flex h-screen bg-[#78abe8]">
       {/* Displaying the details on the left side */}
@@ -215,11 +230,20 @@ const InvestDetail = () => {
             <span className="font-semibold">Loan:</span>
             <span className="ml-2">{data.loan}</span>
           </div>
-          <div className="absolute bottom-3 left-3">
+          <div className="absolute bottom-3 left-3 flex gap-24">
             <button className="flex items-center justify-center bg-[#5BBA9F] text-white px-4 py-2 rounded-lg hover:bg-[#4bc9a5]">
               <FaShoppingCart className="mr-2" />
-              Add to Cart
+              Add to Portfolio
             </button>
+            <button
+                className="bg-[#5BBA9F] p-3 h-fit rounded-lg self-end hover:bg-[#4bc9a5] text-white"
+                onClick={handleSustainabilityScoreClick(data.Summary)}
+              >
+                {language === "english" ? "Sustainability Score" : "बचाना"}
+              </button>
+
+            
+
           </div>
         </div>
       </div>
@@ -230,7 +254,7 @@ const InvestDetail = () => {
         <div>
         <div className="bg-white p-3 mx-10 rounded-lg">
           <span className="font-semibold">
-            {language === "english" ? "Your Input:" : "आपका इनपुट:"}
+            {language === "english" ? "Enquire here:" : "आपका इनपुट:"}
           </span>
           <span className="ml-2">{newMessage}</span>
         </div>
