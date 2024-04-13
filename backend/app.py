@@ -85,8 +85,13 @@ def translate_pitch():
         print(sentence)
         sentences = []
         sentences.append(sentence)
+        sentence = data.get('prompt', '')
+        print(sentence)
+        sentences = []
+        sentences.append(sentence)
         src_lang = data.get('src_lang', '')
         tgt_lang = 'eng_Latn'
+        print(sentences)
         print(sentences)
 
         if src_lang == 'eng_Latn':
@@ -104,6 +109,7 @@ def translate_pitch():
 
         outputs = tokenizer.batch_decode(outputs, src=False)
         outputs = ip.postprocess_batch(outputs, lang=tgt_lang)
+        print("Output:", outputs)
         print("Output:", outputs)
         print(outputs[0])
         return jsonify({'answer': outputs[0]})
@@ -140,7 +146,42 @@ def translate_framed_pitch():
         print("Output:", outputs)
         print(outputs[0])
         return jsonify({'answer': outputs[0]})
+        return jsonify({'answer': outputs[0]})
     except Exception as e:
+        return jsonify({"error": str(e)})
+    
+@flask_app.route('/translate_framed_pitch', methods=['POST'])
+def translate_framed_pitch():
+    try:
+        data = request.get_json()
+        sentence = data.get('prompt', '')
+        print(sentence)
+        sentences = []
+        sentences.append(sentence)
+        tgt_lang = data.get('src_lang', '')
+        src_lang = 'eng_Latn'
+        print(sentences)
+
+        if src_lang == 'eng_Latn':
+            model = en_indic_model
+            tokenizer = en_indic_tokenizer
+        else:
+            model = indic_en_model
+            tokenizer = indic_en_tokenizer
+
+        batch = ip.preprocess_batch(sentences, src_lang=src_lang, tgt_lang=tgt_lang)
+        batch = tokenizer(batch, src=True, return_tensors="pt")
+
+        with torch.inference_mode():
+            outputs = model.generate(**batch, num_beams=5, num_return_sequences=1, max_length=256)
+
+        outputs = tokenizer.batch_decode(outputs, src=False)
+        outputs = ip.postprocess_batch(outputs, lang=tgt_lang)
+        print("Output:", outputs)
+        print(outputs[0])
+        return jsonify({'answer': outputs[0]})
+    except Exception as e:
+        return jsonify({"error": str(e)})
         return jsonify({"error": str(e)})
     
 # English pitch to framed content
