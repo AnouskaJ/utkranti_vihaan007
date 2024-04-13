@@ -16,7 +16,7 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 - Flask for API development
 - React Vite and Tailwind CSS for frontend development
 - Generative AI (Mistral LLM model and Embedchain RAG Framework) for pitch conversion
-- Deep learning models for financial analysis
+- Data analysis Tools for financial analysis
 - Speech-to-text for language support
 - Data analysis tools for sustainability metrics
 
