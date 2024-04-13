@@ -26,6 +26,10 @@ Utkranti is an entrepreneur support platform aimed at empowering small-scale ent
 - Expansion of sustainability metrics beyond carbon footprint
 - Implementation of blockchain technology for secure transactions and data management
 
+## ✔️ Process Flow
+<img width="4064" alt="utkranti flow (1)" src="https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/92512aff-614c-4933-8d74-6649ae9c5832">
+
+
 ## 📷 Screenshots
 - Landing Page
 ![Screenshot 2024-04-13 082043](https://github.com/AnouskaJ/utkranti_vihaan007/assets/82711261/6020196a-d228-44c6-aa69-9135e146e232)
